@@ -4,6 +4,7 @@ package layout;
 import android.net.Proxy;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -31,6 +32,8 @@ import fi.elka.elkaxiot.R;
 public class HomeFragment extends Fragment {
 
     ArrayList<Data> listData = new ArrayList<Data>();
+    private SwipeRefreshLayout refreshLayout;
+    final DataAdapter dataAdapter = new DataAdapter(getActivity(), listData);
 
     public HomeFragment() {
         // Required empty public constructor
@@ -42,11 +45,24 @@ public class HomeFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        final DataAdapter dataAdapter = new DataAdapter(getActivity(), listData);
+        refreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipelayout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
+            @Override
+            public void onRefresh(){
+                fetchData();
+            }
+        });
 
+        RecyclerView itemRecycleView = (RecyclerView) v.findViewById(R.id.rv_home);
+        itemRecycleView.setAdapter(dataAdapter);
+        itemRecycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        //Data dummy
-        DataClient.get("current", null, new JsonHttpResponseHandler(){
+        // Inflate the layout for this fragment
+        return v;
+    }
+
+    private void fetchData() {
+        DataClient.get("/current", null, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response){
 
@@ -56,6 +72,7 @@ public class HomeFragment extends Fragment {
             public void onSuccess(int statusCode, Header[] headers, JSONArray datas){
                 JSONArray currentDatas = datas;
                 try {
+                    dataAdapter.clear();
                     JSONObject temp = currentDatas.getJSONObject(0);
                     JSONObject humid = currentDatas.getJSONObject(1);
                     double temp_ = temp.getDouble("temp");
@@ -63,20 +80,13 @@ public class HomeFragment extends Fragment {
                     listData.add(new Data("Humidity", humid_));
                     listData.add(new Data("Temperature", temp_));
                     dataAdapter.notifyDataSetChanged();
+                    refreshLayout.setRefreshing(false);
                     Log.d("fromJSON", "" + temp_);
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
             }
         });
-
-
-        RecyclerView itemRecycleView = (RecyclerView) v.findViewById(R.id.rv_home);
-        itemRecycleView.setAdapter(dataAdapter);
-        itemRecycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        // Inflate the layout for this fragment
-        return v;
     }
 
 }

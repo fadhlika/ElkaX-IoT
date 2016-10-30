@@ -11,7 +11,7 @@ import java.net.ProxySelector;
 public class DataClient {
 
 
-    private static final String BASE_URL = "https://fadh.xyz/dummyapi/";
+    private static final String BASE_URL = "https://www.elka.fi.itb.ac.id/iot2";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 

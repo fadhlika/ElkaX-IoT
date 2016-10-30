@@ -69,6 +69,14 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         return dataList.size();
     }
 
-    Data data;
+    public void clear(){
+        dataList.clear();
+        notifyDataSetChanged();
+    }
+
+    public void addAll (List<Data> list){
+        dataList.addAll(list);
+        notifyDataSetChanged();
+    }
 
 }
